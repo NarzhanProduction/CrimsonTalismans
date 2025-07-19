@@ -1,0 +1,21 @@
+name: CrimsonTalismans
+version: '1.0-SNAPSHOT'
+main: dev.narzhanp.crimsonTalismans.CrimsonTalismans
+api-version: '1.21'
+load: STARTUP
+authors: [ NarzhanP ]
+description: Talismans plugin for Crimson Anarchy.
+commands:
+  crimsontalismans:
+    description: Main command for CrimsonTalismans plugin
+    aliases: [crimt]
+permissions:
+  crimsontalismans.reload:
+    description: Allows reloading the talismans configuration
+    default: op
+  crimsontalismans.gui:
+    description: Allows opening the talismans GUI
+    default: true
+  crimsontalismans.gettalisman:
+    description: Allows getting talismans from GUI
+    default: op

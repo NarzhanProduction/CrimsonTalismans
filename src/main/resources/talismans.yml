@@ -1,0 +1,29 @@
+talismans:
+  edge_1_3:
+    Item:
+      Material: TOTEM_OF_UNDYING
+      Glow: true
+      Hide-attributes: true
+      CustomModelData: 0
+      Displayname: '&x&F&F&0&0&0&0[★] &x&F&F&7&2&0&0Талисман Грани'
+      Lore:
+        - '&4➥ &x&F&F&E&E&0&0Уровень: &x&F&F&7&2&0&01/3'
+        - ''
+        - '&7Когда во второстепенной руке:'
+        - '&9+1 Урон'
+        - '&c-2 Максимальное здоровье'
+      Item-flags:
+        - ALL
+    Modifiers:
+      - GENERIC_ATTACK_DAMAGE|+1|OFF_HAND
+      - GENERIC_MAX_HEALTH|-2|OFF_HAND
+    Recipe:
+      Enabled: true
+      Shape:
+        - EME
+        - DDB
+        - EME
+      E: EMERALD
+      M: MAGMA_CREAM
+      D: DIAMOND
+      B: DIAMOND_BLOCK

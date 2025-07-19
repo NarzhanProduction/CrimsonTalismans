@@ -1,0 +1,13 @@
+messages:
+  prefix: "&c[CrimsonTalismans] "
+  commands:
+    help: "&7Use /crimt [reload|gui]"
+  no-permission: "&cYou don't have permission!"
+  player-only: "&cThis command is for players only!"
+  reload-success: "&aConfiguration reloaded!"
+  invalid-command: "&cInvalid subcommand! Use /crimt [reload|gui]"
+  talisman-given: "&aTalisman %talisman% given!"
+gui:
+  title: "&8Talismans"
+  recipe-title: "&8Recipe: %talisman%"
+  back: "&cBack"
