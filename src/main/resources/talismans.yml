@@ -16,8 +16,6 @@ talismans:
       Enchantments:
         - THORNS,2
         - PROTECTION,4
-      Item-flags:
-        - ALL
     Modifiers:
       - GENERIC_ATTACK_DAMAGE|+1|OFF_HAND
       - GENERIC_MAX_HEALTH|-2|OFF_HAND
