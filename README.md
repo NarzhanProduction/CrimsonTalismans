@@ -4,7 +4,7 @@ on version 1.21. That's why I decided to make my own plugin, only for a newer ve
 
 Features:
 1. Specify any item
-2. 2. Add glow (adds repair enchantment and hides it)
+2. Add glow (adds repair enchantment and hides it)
 3. Hide attributes
 4. Custom Model Data support
 5. Attributes
