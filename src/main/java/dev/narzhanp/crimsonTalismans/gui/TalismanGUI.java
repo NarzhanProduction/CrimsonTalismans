@@ -101,10 +101,6 @@ public class TalismanGUI {
         player.openInventory(inventory);
     }
 
-    public Inventory getInventory() {
-        return inventory;
-    }
-
     public Map<String, ItemStack> getTalismanItems() {
         return talismanItems;
     }

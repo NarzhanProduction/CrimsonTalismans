@@ -6,11 +6,12 @@ import dev.narzhanp.crimsonTalismans.listener.TalismanListener;
 import dev.narzhanp.crimsonTalismans.manager.TalismanManager;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 
-public final class CrimsonTalismans extends JavaPlugin {
+public final class CrimsonTalismans extends JavaPlugin implements Listener {
     private TalismanGUIListener guiListener;
     private TalismanManager talismanManager;
     private FileConfiguration langConfig;
@@ -24,6 +25,7 @@ public final class CrimsonTalismans extends JavaPlugin {
         talismanManager.registerRecipes();
         getServer().getPluginManager().registerEvents(new TalismanListener(talismanManager, this), this);
         getCommand("crimsontalismans").setExecutor(new TalismanCommands(this));
+        getServer().getPluginManager().registerEvents(this, this);
         getLogger().info("Loaded CrimsonTalismans!");
     }
 

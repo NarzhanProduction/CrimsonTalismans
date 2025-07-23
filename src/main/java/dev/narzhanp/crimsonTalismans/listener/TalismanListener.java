@@ -9,10 +9,15 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
@@ -24,11 +29,13 @@ public class TalismanListener implements Listener {
     private final TalismanManager talismanManager;
     private final CrimsonTalismans plugin;
     private final NamespacedKey modifierKey;
+    private final NamespacedKey talismanKey;
 
     public TalismanListener(TalismanManager talismanManager, CrimsonTalismans plugin) {
         this.talismanManager = talismanManager;
         this.plugin = plugin;
         this.modifierKey = new NamespacedKey(plugin, "talisman_modifier");
+        this.talismanKey = new NamespacedKey(plugin, "talisman_id");
     }
 
     @EventHandler
@@ -95,6 +102,23 @@ public class TalismanListener implements Listener {
                     plugin.getLogger().warning("Invalid attribute: " + entry.getKey() + " for talisman: " + talismanId);
                 }
             }
+        }
+    }
+
+    // Prohibit placing talismans
+    @EventHandler
+    public void onBlockPlace(BlockPlaceEvent event) {
+        ItemStack item = event.getItemInHand();
+        if (!item.hasItemMeta()) return;
+
+        ItemMeta meta = item.getItemMeta();
+        String talismanName;
+
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        talismanName = pdc.get(talismanKey, PersistentDataType.STRING);
+
+        if (talismanName != null) {
+            event.setCancelled(true);
         }
     }
 }

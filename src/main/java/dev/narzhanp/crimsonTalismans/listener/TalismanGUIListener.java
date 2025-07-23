@@ -18,6 +18,9 @@ import java.util.UUID;
 public class TalismanGUIListener implements Listener {
     private final CrimsonTalismans plugin;
     private final Map<UUID, TalismanGUI> activeGUIs;
+    private String color(String text) {
+        return org.bukkit.ChatColor.translateAlternateColorCodes('&', text);
+    }
 
     public TalismanGUIListener(CrimsonTalismans plugin) {
         this.plugin = plugin;
@@ -96,9 +99,5 @@ public class TalismanGUIListener implements Listener {
         if (event.getInventory().getHolder() instanceof TalismanGUI.TalismanGUIHolder) {
             event.setCancelled(true);
         }
-    }
-
-    private String color(String text) {
-        return org.bukkit.ChatColor.translateAlternateColorCodes('&', text);
     }
 }

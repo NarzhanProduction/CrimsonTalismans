@@ -81,7 +81,7 @@ public class TalismanCommands implements CommandExecutor, TabCompleter {
 
         List<String> filteredCompletions = new ArrayList<>();
         for (String completion : completions) {
-            if (args.length == 0 || completion.toLowerCase().startsWith(args[0].toLowerCase())) {
+            if (completion.toLowerCase().startsWith(args[0].toLowerCase())) {
                 filteredCompletions.add(completion);
             }
         }
