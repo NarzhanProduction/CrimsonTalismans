@@ -251,11 +251,6 @@ public class TalismanManager {
         return effects;
     }
 
-    public String getCraftPermission(String talisman) {
-        String path = "talismans." + talisman + ".Recipe";
-        return talismansConfig.getString(path + ".Permission", null);
-    }
-
     public Map<Character, Material> getRecipeIngredients(String talisman) {
         Map<Character, Material> ingredients = new HashMap<>();
         for (String ingredient : talismansConfig.getConfigurationSection("talismans." + talisman + ".Recipe").getKeys(false)) {
@@ -283,6 +278,11 @@ public class TalismanManager {
 
     public List<String> getRecipeShape(String talisman) {
         return talismansConfig.getStringList("talismans." + talisman + ".Recipe.Shape");
+    }
+
+    public String getCraftPermission(String talisman) {
+        String path = "talismans." + talisman + ".Recipe";
+        return talismansConfig.getString(path + ".Permission", null);
     }
 
     private String color(String text) {
