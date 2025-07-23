@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.List;
@@ -22,8 +23,8 @@ public class TalismanGUI {
     public TalismanGUI(CrimsonTalismans plugin, Player player, boolean isRecipeGUI, String talismanName) {
         this.plugin = plugin;
         this.player = player;
-        this.holder = new TalismanGUIHolder(isRecipeGUI);
         this.talismanItems = new HashMap<>();
+        this.holder = new TalismanGUIHolder(isRecipeGUI);
         if (isRecipeGUI) {
             if (talismanName == null) {
                 throw new IllegalArgumentException("talismanName cannot be null for recipe GUI");
@@ -36,6 +37,12 @@ public class TalismanGUI {
             initializeMainGUI();
         }
     }
+
+    public void openAndRegister() {
+        plugin.getTalismanGUIListener().registerGUI(player, this);
+        open();
+    }
+
 
     public TalismanGUI(CrimsonTalismans plugin, Player player) {
         this(plugin, player, false, null);
@@ -58,7 +65,7 @@ public class TalismanGUI {
 
     private void initializeRecipeGUI(String talismanName) {
         fillEmptySlots(inventory, createPanel(Material.BLACK_STAINED_GLASS_PANE, "&7"));
-        int[] frameSlots = new int[]{9, 10, 11, 12, 13, 18, 22, 27, 31, 36, 37, 38, 39, 40};
+        int[] frameSlots = new int[]{9, 10, 11, 12, 13, 18, 22, 27, 31, 36, 37, 38, 39, 40, 45, 46, 47, 48, 49};
         for (int slot : frameSlots) {
             inventory.setItem(slot, createPanel(Material.GRAY_STAINED_GLASS_PANE, "&7"));
         }
@@ -87,10 +94,9 @@ public class TalismanGUI {
             inventory.setItem(32, new ItemStack(Material.ARROW));
             ItemStack backButton = new ItemStack(Material.BARRIER);
             ItemMeta backMeta = backButton.getItemMeta();
-            backMeta.setDisplayName(color(
-                    plugin.getLangConfig().getString("messages.back", "&cBack")));
+            backMeta.setDisplayName(color(plugin.getLangConfig().getString("gui.back", "&cBack")));
             backButton.setItemMeta(backMeta);
-            inventory.setItem(45, backButton);
+            inventory.setItem(0, backButton);
         } else {
             player.closeInventory();
             plugin.getLogger().warning("Invalid recipe shape for talisman " + talismanName + " in GUI");

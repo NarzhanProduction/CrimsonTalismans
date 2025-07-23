@@ -2,6 +2,7 @@ package dev.narzhanp.crimsonTalismans.listener;
 
 import dev.narzhanp.crimsonTalismans.CrimsonTalismans;
 import dev.narzhanp.crimsonTalismans.gui.TalismanGUI;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -10,6 +11,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,13 +31,9 @@ public class TalismanGUIListener implements Listener {
         plugin.getLogger().info("Registered TalismanGUIListener");
     }
 
-    public void registerGUI(Player player, TalismanGUI gui) {
-        activeGUIs.put(player.getUniqueId(), gui);
-    }
+    public void registerGUI(Player player, TalismanGUI gui) { activeGUIs.put(player.getUniqueId(), gui); }
 
-    public void unregisterGUI(Player player) {
-        activeGUIs.remove(player.getUniqueId());
-    }
+    public void unregisterGUI(Player player) { activeGUIs.remove(player.getUniqueId()); }
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
@@ -77,13 +75,17 @@ public class TalismanGUIListener implements Listener {
                 plugin.getLogger().info("Gave talisman " + talismanName + " to player " + clicker.getName());
             } else if (event.isLeftClick() && plugin.getTalismanManager().hasRecipe(talismanName)) {
                 TalismanGUI recipeGUI = new TalismanGUI(plugin, clicker, true, talismanName);
-                registerGUI(clicker, recipeGUI);
-                recipeGUI.open();
+                recipeGUI.openAndRegister();
+                Bukkit.getScheduler().runTask(plugin, () -> registerGUI(clicker, recipeGUI));
             }
-        } else if (clickedItem.getType() == Material.BARRIER && event.getSlot() == 45) {
-            TalismanGUI mainGUI = new TalismanGUI(plugin, clicker, false, null);
-            registerGUI(clicker, mainGUI);
-            mainGUI.open();
+        } else {
+            String backButtonName = color(plugin.getLangConfig().getString("gui.back", "&cBack"));
+            ItemMeta meta = clickedItem.getItemMeta();
+            if (event.getSlot() == 0 && meta != null && meta.hasDisplayName() && backButtonName.equals(meta.getDisplayName())) {
+                TalismanGUI mainGUI = new TalismanGUI(plugin, clicker, false, null);
+                mainGUI.openAndRegister();
+                Bukkit.getScheduler().runTask(plugin, () -> registerGUI(clicker, mainGUI));
+            }
         }
     }
 

@@ -13,6 +13,8 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import dev.narzhanp.crimsonTalismans.CrimsonTalismans;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.profile.PlayerTextures;
 
 import java.io.File;
@@ -83,7 +85,7 @@ public class TalismanManager {
             }
 
             for (String ingredient : talismansConfig.getConfigurationSection("talismans." + talisman + ".Recipe").getKeys(false)) {
-                if (!ingredient.equals("Enabled") && !ingredient.equals("Title") && !ingredient.equals("Shape") && ingredient.length() == 1) {
+                if (!ingredient.equals("Enabled") && !ingredient.equals("Title") && !ingredient.equals("Shape") && !ingredient.equals("Permission")) {
                     String material = talismansConfig.getString("talismans." + talisman + ".Recipe." + ingredient);
                     if (material != null && !material.isEmpty()) {
                         try {
@@ -157,7 +159,29 @@ public class TalismanManager {
             }
         }
 
-        meta.getEnchants().keySet().forEach(meta::removeEnchant);
+        List<String> enchantments = talismansConfig.getStringList(path + ".Enchantments");
+        for (String enchant : enchantments) {
+            try {
+                String[] parts = enchant.split(",");
+                if (parts.length != 2) {
+                    plugin.getLogger().warning("Invalid enchantment format '" + enchant + "' for talisman " + talisman);
+                    continue;
+                }
+                String enchantName = parts[0].trim().toUpperCase();
+                int level = Integer.parseInt(parts[1].trim());
+                Enchantment enchantment = Enchantment.getByName(enchantName);
+                if (enchantment != null) {
+                    meta.addEnchant(enchantment, level, true);
+                } else {
+                    plugin.getLogger().warning("Invalid enchantment type: " + enchantName + " for talisman " + talisman);
+                }
+            } catch (NumberFormatException e) {
+                plugin.getLogger().warning("Invalid enchantment level in '" + enchant + "' for talisman " + talisman);
+            } catch (Exception e) {
+                plugin.getLogger().warning("Failed to apply enchantment '" + enchant + "' for talisman " + talisman + ": " + e.getMessage());
+            }
+        }
+
         meta.getItemFlags().forEach(meta::removeItemFlags);
         boolean glow = talismansConfig.getBoolean(path + ".Glow", false);
         if (glow) {
@@ -200,10 +224,42 @@ public class TalismanManager {
         return modifiers;
     }
 
+    public List<PotionEffect> getTalismanPotionEffects(String talisman) {
+        List<PotionEffect> effects = new ArrayList<>();
+        for (String effect : talismansConfig.getStringList("talismans." + talisman + ".PotionEffects")) {
+            String[] parts = effect.split("\\|");
+            if (parts.length == 3) {
+                String effectType = parts[0].trim().toUpperCase();
+                try {
+                    PotionEffectType type = PotionEffectType.getByName(effectType);
+                    if (type == null) {
+                        plugin.getLogger().warning("Invalid potion effect type: " + effectType + " for talisman " + talisman);
+                        continue;
+                    }
+                    int duration = Integer.parseInt(parts[1].trim());
+                    int amplifier = Integer.parseInt(parts[2].trim());
+                    effects.add(new PotionEffect(type, duration, amplifier, true, false));
+                } catch (NumberFormatException e) {
+                    plugin.getLogger().warning("Invalid number format in potion effect '" + effect + "' for talisman " + talisman);
+                } catch (Exception e) {
+                    plugin.getLogger().warning("Failed to parse potion effect '" + effect + "' for talisman " + talisman + ": " + e.getMessage());
+                }
+            } else {
+                plugin.getLogger().warning("Invalid potion effect format for talisman " + talisman + ": " + effect);
+            }
+        }
+        return effects;
+    }
+
+    public String getCraftPermission(String talisman) {
+        String path = "talismans." + talisman + ".Recipe";
+        return talismansConfig.getString(path + ".Permission", null);
+    }
+
     public Map<Character, Material> getRecipeIngredients(String talisman) {
         Map<Character, Material> ingredients = new HashMap<>();
         for (String ingredient : talismansConfig.getConfigurationSection("talismans." + talisman + ".Recipe").getKeys(false)) {
-            if (!ingredient.equals("Enabled") && !ingredient.equals("Title") && !ingredient.equals("Shape") && ingredient.length() == 1) {
+            if (!ingredient.equals("Enabled") && !ingredient.equals("Title") && !ingredient.equals("Shape") && !ingredient.equals("Permission")) {
                 String material = talismansConfig.getString("talismans." + talisman + ".Recipe." + ingredient);
                 if (material != null && !material.isEmpty()) {
                     try {
@@ -227,10 +283,6 @@ public class TalismanManager {
 
     public List<String> getRecipeShape(String talisman) {
         return talismansConfig.getStringList("talismans." + talisman + ".Recipe.Shape");
-    }
-
-    public FileConfiguration getTalismansConfig() {
-        return talismansConfig;
     }
 
     private String color(String text) {

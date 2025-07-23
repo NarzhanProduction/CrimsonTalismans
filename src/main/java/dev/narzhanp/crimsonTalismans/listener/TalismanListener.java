@@ -11,18 +11,19 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class TalismanListener implements Listener {
@@ -30,12 +31,23 @@ public class TalismanListener implements Listener {
     private final CrimsonTalismans plugin;
     private final NamespacedKey modifierKey;
     private final NamespacedKey talismanKey;
+    private final Map<UUID, BukkitRunnable> playerEffectTasks;
 
     public TalismanListener(TalismanManager talismanManager, CrimsonTalismans plugin) {
         this.talismanManager = talismanManager;
         this.plugin = plugin;
         this.modifierKey = new NamespacedKey(plugin, "talisman_modifier");
         this.talismanKey = new NamespacedKey(plugin, "talisman_id");
+        this.playerEffectTasks = new HashMap<>();
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        UUID playerId = event.getPlayer().getUniqueId();
+        BukkitRunnable task = playerEffectTasks.remove(playerId);
+        if (task != null) {
+            task.cancel();
+        }
     }
 
     @EventHandler
@@ -55,6 +67,23 @@ public class TalismanListener implements Listener {
         }
     }
 
+    @EventHandler
+    public void onPrepareCraft(PrepareItemCraftEvent event) {
+        ItemStack result = event.getInventory().getResult();
+        if (result == null || !result.hasItemMeta()) return;
+
+        String talismanId = talismanManager.getTalismanId(result);
+        if (talismanId == null || !talismanManager.getTalismanNames().contains(talismanId)) return;
+
+        String permission = talismanManager.getCraftPermission(talismanId);
+        if (permission != null && !permission.isEmpty()) {
+            Player player = (Player) event.getView().getPlayer();
+            if (!player.hasPermission(permission)) {
+                event.getInventory().setResult(null);
+            }
+        }
+    }
+
     private void scheduleUpdateTalismanEffects(Player player) {
         new BukkitRunnable() {
             @Override
@@ -67,8 +96,9 @@ public class TalismanListener implements Listener {
     private void updateTalismanEffects(Player player) {
         ItemStack offHand = player.getInventory().getItemInOffHand();
         String talismanId = talismanManager.getTalismanId(offHand);
+        UUID playerId = player.getUniqueId();
 
-        // Remove existing modifiers
+        // Remove existing modifiers and potion effects
         for (Attribute attribute : Attribute.values()) {
             AttributeInstance attrInstance = player.getAttribute(attribute);
             if (attrInstance != null) {
@@ -83,8 +113,18 @@ public class TalismanListener implements Listener {
                 }
             }
         }
+        for (PotionEffect effect : player.getActivePotionEffects()) {
+            if (effect.getType().getKey().getNamespace().equals(talismanKey.getNamespace())) {
+                player.removePotionEffect(effect.getType());
+            }
+        }
 
-        // Apply new modifiers if valid talisman
+        BukkitRunnable existingTask = playerEffectTasks.remove(playerId);
+        if (existingTask != null) {
+            existingTask.cancel();
+        }
+
+        // Apply new modifiers and effects
         if (talismanId != null && talismanManager.getTalismanNames().contains(talismanId)) {
             Map<String, Double> modifiers = talismanManager.getTalismanModifiers(talismanId);
             for (Map.Entry<String, Double> entry : modifiers.entrySet()) {
@@ -101,6 +141,52 @@ public class TalismanListener implements Listener {
                 } catch (IllegalArgumentException e) {
                     plugin.getLogger().warning("Invalid attribute: " + entry.getKey() + " for talisman: " + talismanId);
                 }
+            }
+
+            // Apply potion effects and schedule renewal
+            List<PotionEffect> effects = talismanManager.getTalismanPotionEffects(talismanId);
+            if (!effects.isEmpty()) {
+                for (PotionEffect effect : effects) {
+                    try {
+                        player.addPotionEffect(effect);
+                    } catch (Exception e) {
+                        plugin.getLogger().warning("Failed to apply potion effect '" + effect.getType().getName() + "' for talisman " + talismanId + ": " + e.getMessage());
+                    }
+                }
+
+                // Calculate the minimum duration minus 1 second (20 ticks)
+                long minDuration = effects.stream()
+                        .mapToLong(PotionEffect::getDuration)
+                        .min()
+                        .orElse(200L); // Default to 200 ticks if no effects (shouldn't happen)
+                long renewalInterval = Math.max(minDuration - 20L, 20L); // Ensure at least 20 ticks
+
+                BukkitRunnable renewalTask = new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        if (!player.isOnline()) {
+                            playerEffectTasks.remove(playerId);
+                            cancel();
+                            return;
+                        }
+                        ItemStack currentOffHand = player.getInventory().getItemInOffHand();
+                        String currentTalismanId = talismanManager.getTalismanId(currentOffHand);
+                        if (talismanId.equals(currentTalismanId)) {
+                            for (PotionEffect effect : effects) {
+                                try {
+                                    player.addPotionEffect(effect);
+                                } catch (Exception e) {
+                                    plugin.getLogger().warning("Failed to renew potion effect '" + effect.getType().getName() + "' for talisman " + talismanId + ": " + e.getMessage());
+                                }
+                            }
+                        } else {
+                            playerEffectTasks.remove(playerId);
+                            cancel();
+                        }
+                    }
+                };
+                playerEffectTasks.put(playerId, renewalTask);
+                renewalTask.runTaskTimer(plugin, renewalInterval, renewalInterval);
             }
         }
     }

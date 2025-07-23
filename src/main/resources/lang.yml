@@ -3,6 +3,7 @@ messages:
   commands:
     help: "&7Use /crimt [reload|gui]"
   no-permission: "&cYou don't have permission!"
+  no-permission-craft: "&cYou have no permission to craft this!"
   player-only: "&cThis command is for players only!"
   reload-success: "&aConfiguration reloaded!"
   invalid-command: "&cInvalid subcommand! Use /crimt [reload|gui]"

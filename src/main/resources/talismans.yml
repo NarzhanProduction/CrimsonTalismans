@@ -1,3 +1,4 @@
+# An example talisman
 talismans:
   edge_1_3:
     Item:
@@ -5,20 +6,27 @@ talismans:
       Glow: true
       Hide-attributes: true
       CustomModelData: 0
-      Displayname: '&x&F&F&0&0&0&0[★] &x&F&F&7&2&0&0Талисман Грани'
+      Displayname: '&x&F&F&0&0&0&0[★] &x&F&F&7&2&0&0Talisman of edge'
       Lore:
-        - '&4➥ &x&F&F&E&E&0&0Уровень: &x&F&F&7&2&0&01/3'
+        - '&4➥ &x&F&F&E&E&0&0Level: &x&F&F&7&2&0&01/3'
         - ''
-        - '&7Когда во второстепенной руке:'
-        - '&9+1 Урон'
-        - '&c-2 Максимальное здоровье'
+        - '&7When in offhand:'
+        - '&9+1 Damage'
+        - '&c-2 Max Health'
+      Enchantments:
+        - THORNS,2
+        - PROTECTION,4
       Item-flags:
         - ALL
     Modifiers:
       - GENERIC_ATTACK_DAMAGE|+1|OFF_HAND
       - GENERIC_MAX_HEALTH|-2|OFF_HAND
+    PotionEffects:
+      - SPEED|200|1
+      - STRENGTH|200|0
     Recipe:
       Enabled: true
+      Permission: "crimsontalismans.recipes.edge1"
       Shape:
         - EME
         - DDB
