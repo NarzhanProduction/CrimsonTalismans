@@ -8,6 +8,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,17 +52,7 @@ public final class CrimsonTalismans extends JavaPlugin implements Listener {
         }
         langConfig = YamlConfiguration.loadConfiguration(langFile);
 
-        Map<String, String> defaultLangValues = new HashMap<>();
-        defaultLangValues.put("messages.prefix", "&c[CrimsonTalismans] ");
-        defaultLangValues.put("messages.commands.help", "&7Use /crimt [reload|gui]");
-        defaultLangValues.put("messages.no-permission", "&cYou don't have permission!");
-        defaultLangValues.put("messages.player-only", "&cThis command is for players only!");
-        defaultLangValues.put("messages.reload-success", "&aConfiguration reloaded!");
-        defaultLangValues.put("messages.invalid-command", "&cInvalid subcommand! Use /crimt [reload|gui]");
-        defaultLangValues.put("messages.talisman-given", "&aTalisman %talisman% given!");
-        defaultLangValues.put("gui.title", "&8Talismans");
-        defaultLangValues.put("gui.recipe-title", "&8Recipe: %talisman%");
-        defaultLangValues.put("gui.back", "&cBack");
+        Map<String, String> defaultLangValues = getStringStringMap();
 
         // Check and update missing keys
         boolean updated = false;
@@ -84,5 +75,20 @@ public final class CrimsonTalismans extends JavaPlugin implements Listener {
                 getLogger().severe("Failed to save updated lang.yml: " + e.getMessage());
             }
         }
+    }
+
+    private static @NotNull Map<String, String> getStringStringMap() {
+        Map<String, String> defaultLangValues = new HashMap<>();
+        defaultLangValues.put("messages.prefix", "&c[CrimsonTalismans] ");
+        defaultLangValues.put("messages.commands.help", "&7Use /crimt [reload|gui]");
+        defaultLangValues.put("messages.no-permission", "&cYou don't have permission!");
+        defaultLangValues.put("messages.player-only", "&cThis command is for players only!");
+        defaultLangValues.put("messages.reload-success", "&aConfiguration reloaded!");
+        defaultLangValues.put("messages.invalid-command", "&cInvalid subcommand! Use /crimt [reload|gui]");
+        defaultLangValues.put("messages.talisman-given", "&aTalisman %talisman% given!");
+        defaultLangValues.put("gui.title", "&8Talismans");
+        defaultLangValues.put("gui.recipe-title", "&8Recipe: %talisman%");
+        defaultLangValues.put("gui.back", "&cBack");
+        return defaultLangValues;
     }
 }
